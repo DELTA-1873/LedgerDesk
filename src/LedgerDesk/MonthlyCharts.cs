@@ -39,7 +39,7 @@ public static class MonthlyDashboard
         var months = Enumerable.Range(0, 36).Select(i => new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(-i)).ToList();
         var monthPicker = Picker(months, 118, "{0:yyyy年M月}");
         monthPicker.SelectedIndex = 0;
-        monthPicker.SelectionChanged += (_, _) => { if (monthPicker.SelectedItem is DateTime month) ring.ShowMonth(month); };
+        monthPicker.SelectionChanged += (_, _) => { if (monthPicker.SelectedItem is DateTime month) { ring.ShowMonth(month); window.UpdateSummaryMonth(month); } };
         var scopePicker = Picker(new[] { "生活消费", "大额支出", "未分类", "全部支出" }, 96, null);
         scopePicker.SelectedIndex = 3;
         scopePicker.SelectionChanged += (_, _) => ring.Scope = scopePicker.SelectedIndex switch { 1 => ExpenseScope.Large, 2 => ExpenseScope.Unclassified, 3 => ExpenseScope.All, _ => ExpenseScope.Living };
