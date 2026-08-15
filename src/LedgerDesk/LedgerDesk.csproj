@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>LedgerDesk</AssemblyName>
+    <RootNamespace>LedgerDesk</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\*.svg" />
+    <Content Include="Assets\LUCIDE-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
