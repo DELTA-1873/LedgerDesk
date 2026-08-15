@@ -79,6 +79,8 @@ dotnet build src/LedgerDesk/LedgerDesk.csproj -c Release
 
 ## 最新更新
 
+- 已删除左侧栏底部“本机安全存储 / 无需联网 · 自动保存”提示卡片。
+
 - 项目本地目录已迁移到 `C:\Users\DELTA\Documents\LedgerDesk`，启动脚本继续使用相对路径。
 
 - 修复首次打开明细账本时筛选统计显示“—”、已有账目未立即出现的问题
