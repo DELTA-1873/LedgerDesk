@@ -40,9 +40,9 @@ public static class MonthlyDashboard
         var monthPicker = Picker(months, 118, "{0:yyyy年M月}");
         monthPicker.SelectedIndex = 0;
         monthPicker.SelectionChanged += (_, _) => { if (monthPicker.SelectedItem is DateTime month) ring.ShowMonth(month); };
-        var scopePicker = Picker(new[] { "生活消费", "大额支出", "全部支出" }, 96, null);
+        var scopePicker = Picker(new[] { "生活消费", "大额支出", "未分类", "全部支出" }, 96, null);
         scopePicker.SelectedIndex = 0;
-        scopePicker.SelectionChanged += (_, _) => ring.Scope = scopePicker.SelectedIndex switch { 1 => ExpenseScope.Large, 2 => ExpenseScope.All, _ => ExpenseScope.Living };
+        scopePicker.SelectionChanged += (_, _) => ring.Scope = scopePicker.SelectedIndex switch { 1 => ExpenseScope.Large, 2 => ExpenseScope.Unclassified, 3 => ExpenseScope.All, _ => ExpenseScope.Living };
         var ringActions = new StackPanel { Orientation = Orientation.Horizontal };
         ringActions.Children.Add(scopePicker); ringActions.Children.Add(monthPicker);
 
@@ -86,7 +86,7 @@ public static class MonthlyDashboard
     static Entry Clone(Entry e) => new() { Id=e.Id,Type=e.Type,Amount=e.Amount,Date=e.Date,Category=e.Category,Account=e.Account,Party=e.Party,Status=e.Status,DueDate=e.DueDate,Repaid=e.Repaid,Note=e.Note,Project=e.Project,Reference=e.Reference,Rate=e.Rate,Custom=e.Custom };
 }
 
-public enum ExpenseScope { Living, Large, All }
+public enum ExpenseScope { Living, Large, Unclassified, All }
 
 public class AnimatedMonthRing : FrameworkElement
 {
@@ -104,12 +104,12 @@ public class AnimatedMonthRing : FrameworkElement
     protected override void OnRender(DrawingContext dc)
     {
         base.OnRender(dc);
-        var rows = cache.Where(x => x.Key.year == month.Year && x.Key.month == month.Month && (Scope == ExpenseScope.All || x.Key.kind == (Scope == ExpenseScope.Large ? "大额支出" : "生活消费"))).GroupBy(x => x.Key.category).Select(g => (name:g.Key, value:g.Sum(x => x.Value))).OrderByDescending(x => x.value).Take(7).ToList();
+        var rows = cache.Where(x => x.Key.year == month.Year && x.Key.month == month.Month && (Scope == ExpenseScope.All || x.Key.kind == (Scope == ExpenseScope.Large ? "大额支出" : Scope == ExpenseScope.Unclassified ? "未分类" : "生活消费"))).GroupBy(x => x.Key.category).Select(g => (name:g.Key, value:g.Sum(x => x.Value))).OrderByDescending(x => x.value).Take(7).ToList();
         var total = rows.Sum(x => x.value);
         if (total <= 0) { Text(dc, $"{month:yyyy年M月}暂无记录", new Point(ActualWidth / 2, ActualHeight / 2 - 8), 12, TextAlignment.Center, Brushes.Gray); return; }
         double ringSize=Math.Min(ActualHeight-20,ActualWidth*.48),cx=ringSize/2+4,cy=ActualHeight/2,r=ringSize*.35,thickness=Math.Max(16,r*.28),start=-135,visible=360*Math.Clamp(Progress,0,1),used=0;
         for(int i=0;i<rows.Count&&used<visible;i++){double full=(double)(rows[i].value/total)*360,sweep=Math.Min(full,visible-used);Arc(dc,new Point(cx,cy),r,start+used,sweep,new SolidColorBrush(colors[i%colors.Length]),thickness);used+=full;}
-        Text(dc,$"¥{total:N0}",new Point(cx,cy-12),15,TextAlignment.Center,Brushes.Black);Text(dc,Scope==ExpenseScope.Large?"大额支出":Scope==ExpenseScope.Living?"生活消费":"全部支出",new Point(cx,cy+10),10,TextAlignment.Center,Brushes.Gray);
+        Text(dc,$"¥{total:N0}",new Point(cx,cy-12),15,TextAlignment.Center,Brushes.Black);Text(dc,Scope==ExpenseScope.Large?"大额支出":Scope==ExpenseScope.Living?"生活消费":Scope==ExpenseScope.Unclassified?"未分类":"全部支出",new Point(cx,cy+10),10,TextAlignment.Center,Brushes.Gray);
         for(int i=0;i<rows.Count;i++){double y=12+i*27,x=ringSize+18;dc.DrawRoundedRectangle(new SolidColorBrush(colors[i%colors.Length]),null,new Rect(x,y+4,9,9),3,3);Text(dc,rows[i].name,new Point(x+16,y),11,TextAlignment.Left,Brushes.Black);Text(dc,$"{rows[i].value/total:P0}",new Point(ActualWidth-4,y),11,TextAlignment.Right,Brushes.DimGray);}
     }
     static void Arc(DrawingContext dc,Point c,double r,double start,double sweep,Brush brush,double width){if(sweep<=.01)return;double A(double x)=>x*Math.PI/180;var p1=new Point(c.X+r*Math.Cos(A(start)),c.Y+r*Math.Sin(A(start)));var p2=new Point(c.X+r*Math.Cos(A(start+sweep)),c.Y+r*Math.Sin(A(start+sweep)));var g=new StreamGeometry();using(var x=g.Open()){x.BeginFigure(p1,false,false);x.ArcTo(p2,new Size(r,r),0,sweep>180,SweepDirection.Clockwise,true,false);}dc.DrawGeometry(null,new Pen(brush,width){StartLineCap=PenLineCap.Round,EndLineCap=PenLineCap.Round},g);}
@@ -131,10 +131,10 @@ public class HorizontalComparisonChart : FrameworkElement
     protected override void OnRender(DrawingContext dc)
     {
         base.OnRender(dc);
-        var rows=Mode==ComparisonMode.Month?Enumerable.Range(0,6).Select(i=>new DateTime(DateTime.Today.Year,DateTime.Today.Month,1).AddMonths(i-5)).Select(d=>(label:$"{d.Month}月",inc:Sum("收入",d.Year,d.Month),life:Sum("生活消费",d.Year,d.Month),large:Sum("大额支出",d.Year,d.Month))).ToList():Enumerable.Range(0,5).Select(i=>DateTime.Today.Year+i-4).Select(y=>(label:$"{y}年",inc:Sum("收入",y,null),life:Sum("生活消费",y,null),large:Sum("大额支出",y,null))).ToList();
-        decimal max=Math.Max(1,rows.SelectMany(x=>new[]{x.inc,x.life,x.large}).Max());double labelW=50,right=54,top=22,rowH=(ActualHeight-top-6)/rows.Count;
-        for(int i=0;i<rows.Count;i++){double y=top+i*rowH;Text(dc,rows[i].label,new Point(0,y+rowH*.34),10,TextAlignment.Left,Brushes.DimGray);DrawBar(dc,labelW,y+2,rows[i].inc,max,ActualWidth-labelW-right,rowH*.20,Color.FromRgb(64,151,115));DrawBar(dc,labelW,y+rowH*.31,rows[i].life,max,ActualWidth-labelW-right,rowH*.20,Color.FromRgb(72,123,180));DrawBar(dc,labelW,y+rowH*.60,rows[i].large,max,ActualWidth-labelW-right,rowH*.20,Color.FromRgb(214,94,87));Text(dc,$"¥{Math.Max(rows[i].inc,Math.Max(rows[i].life,rows[i].large)):N0}",new Point(ActualWidth-2,y+rowH*.34),9,TextAlignment.Right,Brushes.Gray);}
-        Legend(dc,labelW,6,"收入",Color.FromRgb(64,151,115));Legend(dc,labelW+58,6,"生活",Color.FromRgb(72,123,180));Legend(dc,labelW+116,6,"大额",Color.FromRgb(214,94,87));
+        var rows=Mode==ComparisonMode.Month?Enumerable.Range(0,6).Select(i=>new DateTime(DateTime.Today.Year,DateTime.Today.Month,1).AddMonths(i-5)).Select(d=>(label:$"{d.Month}月",inc:Sum("收入",d.Year,d.Month),life:Sum("生活消费",d.Year,d.Month),large:Sum("大额支出",d.Year,d.Month),uncategorized:Sum("未分类",d.Year,d.Month))).ToList():Enumerable.Range(0,5).Select(i=>DateTime.Today.Year+i-4).Select(y=>(label:$"{y}年",inc:Sum("收入",y,null),life:Sum("生活消费",y,null),large:Sum("大额支出",y,null),uncategorized:Sum("未分类",y,null))).ToList();
+        decimal max=Math.Max(1,rows.SelectMany(x=>new[]{x.inc,x.life,x.large,x.uncategorized}).Max());double labelW=50,right=54,top=22,rowH=(ActualHeight-top-6)/rows.Count;
+        for(int i=0;i<rows.Count;i++){double y=top+i*rowH;Text(dc,rows[i].label,new Point(0,y+rowH*.34),10,TextAlignment.Left,Brushes.DimGray);DrawBar(dc,labelW,y+2,rows[i].inc,max,ActualWidth-labelW-right,rowH*.20,Color.FromRgb(64,151,115));DrawBar(dc,labelW,y+rowH*.31,rows[i].life,max,ActualWidth-labelW-right,rowH*.20,Color.FromRgb(72,123,180));DrawBar(dc,labelW,y+rowH*.54,rows[i].large,max,ActualWidth-labelW-right,rowH*.17,Color.FromRgb(214,94,87));DrawBar(dc,labelW,y+rowH*.76,rows[i].uncategorized,max,ActualWidth-labelW-right,rowH*.17,Color.FromRgb(145,151,148));Text(dc,$"¥{new[]{rows[i].inc,rows[i].life,rows[i].large,rows[i].uncategorized}.Max():N0}",new Point(ActualWidth-2,y+rowH*.34),9,TextAlignment.Right,Brushes.Gray);}
+        Legend(dc,labelW,6,"收入",Color.FromRgb(64,151,115));Legend(dc,labelW+58,6,"生活",Color.FromRgb(72,123,180));Legend(dc,labelW+116,6,"大额",Color.FromRgb(214,94,87));Legend(dc,labelW+174,6,"未分类",Color.FromRgb(145,151,148));
     }
     decimal Sum(string kind,int year,int? month)=>month.HasValue?(monthCache.TryGetValue((kind,year,month.Value),out var m)?m:0):(yearCache.TryGetValue((kind,year),out var y)?y:0);
     static void Legend(DrawingContext dc,double x,double y,string label,Color color){dc.DrawEllipse(new SolidColorBrush(color),null,new Point(x,y),4,4);Text(dc,label,new Point(x+9,y-6),10,TextAlignment.Left,Brushes.Gray);}
