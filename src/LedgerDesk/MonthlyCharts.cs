@@ -41,7 +41,7 @@ public static class MonthlyDashboard
         monthPicker.SelectedIndex = 0;
         monthPicker.SelectionChanged += (_, _) => { if (monthPicker.SelectedItem is DateTime month) ring.ShowMonth(month); };
         var scopePicker = Picker(new[] { "生活消费", "大额支出", "未分类", "全部支出" }, 96, null);
-        scopePicker.SelectedIndex = 0;
+        scopePicker.SelectedIndex = 3;
         scopePicker.SelectionChanged += (_, _) => ring.Scope = scopePicker.SelectedIndex switch { 1 => ExpenseScope.Large, 2 => ExpenseScope.Unclassified, 3 => ExpenseScope.All, _ => ExpenseScope.Living };
         var ringActions = new StackPanel { Orientation = Orientation.Horizontal };
         ringActions.Children.Add(scopePicker); ringActions.Children.Add(monthPicker);
@@ -92,7 +92,7 @@ public class AnimatedMonthRing : FrameworkElement
 {
     Dictionary<(int year, int month, string kind, string category), decimal> cache = [];
     DateTime month = DateTime.Today;
-    ExpenseScope scope;
+    ExpenseScope scope = ExpenseScope.All;
     public ExpenseScope Scope { get => scope; set { scope = value; InvalidateVisual(); } }
     public static readonly DependencyProperty ProgressProperty = DependencyProperty.Register(nameof(Progress), typeof(double), typeof(AnimatedMonthRing), new FrameworkPropertyMetadata(1d, FrameworkPropertyMetadataOptions.AffectsRender));
     public double Progress { get => (double)GetValue(ProgressProperty); set => SetValue(ProgressProperty, value); }
