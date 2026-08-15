@@ -2,7 +2,7 @@
 
 > V1 — 离线、无广告、尊重隐私的 Windows 桌面记账软件。
 
-[GitHub 仓库](https://github.com/DELTA-1873/LedgerDesk)
+[GitHub 仓库](https://github.com/DELTA-1873/LedgerDesk) · [V1.0.0](https://github.com/DELTA-1873/LedgerDesk/releases/tag/v1.0.0)
 
 ## V1 功能
 
@@ -46,8 +46,8 @@ dotnet build src/LedgerDesk/LedgerDesk.csproj -c Release
 - [x] 独立源码零错误、零警告构建
 - [x] 旧实验版本清理完成
 - [x] GitHub 仓库创建完成
-- [x] GitHub CLI 登录完成
-- [x] V1 首次提交已准备
+- [x] V1 源码发布到 `main`
+- [x] `v1.0.0` 版本标签
 
 ## 更新日志
 
@@ -57,7 +57,7 @@ dotnet build src/LedgerDesk/LedgerDesk.csproj -c Release
 - 完成三页面快速记账和图标分类选择。
 - 完成卡片式明细、单条详情和数据备份。
 - 完成月份可选的动画消费环状图与月度柱状图。
-- 清理旧实验版本，正式将本轮定为 V1。
+- 清理旧实验版本，正式发布 V1。
 
 ## 许可证
 
