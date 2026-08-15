@@ -1,0 +1,1 @@
+using System.Runtime.CompilerServices;namespace LedgerDesk;internal static class Bootstrap{[ModuleInitializer]internal static void Init(){if(string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WINDIR")))Environment.SetEnvironmentVariable("WINDIR",Environment.GetEnvironmentVariable("SystemRoot")??@"C:\Windows");}}
