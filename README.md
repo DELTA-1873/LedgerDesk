@@ -40,6 +40,11 @@
 dotnet build src/LedgerDesk/LedgerDesk.csproj -c Release
 ```
 
+## 性能优化
+
+- 统计图改为账目更新时一次预聚合，绘制和动画帧不再重复扫描全部账目。
+- 首次启动直接显示完整环状图，不播放入场动画；用户切换月份时仍保留动画。
+
 ## 最新更新
 
 - 项目本地目录已迁移到 `C:\Users\DELTA\Documents\LedgerDesk`，启动脚本继续使用相对路径。
