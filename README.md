@@ -28,9 +28,9 @@
 
 ## 启动 V1
 
-本机程序：`C:\Users\DELTA\LedgerDesk\LedgerDesk-V1\LedgerDesk.exe`
+本机程序：`C:\Users\DELTA\Documents\LedgerDesk\LedgerDesk-V1\LedgerDesk.exe`
 
-也可以双击：`C:\Users\DELTA\LedgerDesk\启动简账V1.cmd`
+也可以双击：`C:\Users\DELTA\Documents\LedgerDesk\启动简账V1.cmd`
 
 ## 从源码构建
 
@@ -41,6 +41,8 @@ dotnet build src/LedgerDesk/LedgerDesk.csproj -c Release
 ```
 
 ## 最新更新
+
+- 项目本地目录已迁移到 `C:\Users\DELTA\Documents\LedgerDesk`，启动脚本继续使用相对路径。
 
 - 修复首次打开明细账本时筛选统计显示“—”、已有账目未立即出现的问题
 - 窗口加载完成时自动填充全部账目，每次进入明细页时再次同步当前筛选
