@@ -81,6 +81,8 @@ dotnet build src/LedgerDesk/LedgerDesk.csproj -c Release
 
 ## 最新更新
 
+- 设置页新增可选的“登录 Windows 后自动启动简账”开关，仅修改当前用户的简账启动项。
+
 - 已删除左侧栏底部“本机安全存储 / 无需联网 · 自动保存”提示卡片。
 
 - 项目本地目录已迁移到 `C:\Users\DELTA\Documents\LedgerDesk`，启动脚本继续使用相对路径。
