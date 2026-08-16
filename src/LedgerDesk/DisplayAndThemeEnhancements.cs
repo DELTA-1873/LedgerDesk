@@ -13,6 +13,7 @@ public static class DisplayAndThemeEnhancements
         {
             FitToPrimaryWorkArea(window);
             AddThemeSelector(window);
+            StartupSettings.Attach(window);
             ThemeManager.Apply(window);
         };
     }
